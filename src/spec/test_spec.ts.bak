@@ -1,0 +1,56 @@
+import * as fs from "fs";
+import * as jwt from "jsonwebtoken";
+import { Const } from "./testConst";
+import { TestUtility } from "./testUtility";
+import { JWTUtil } from "../common/jwtUtil";
+
+describe("Virtual Wine Cellar(VWC) Service API テスト", () => {
+
+    let cookie;
+
+    describe("ユーザー向け APIテスト", () => {
+
+        it("ユーザーログイン", (done) => {
+            // パラメータの設定
+            const url = Const.BASE_URL + "/v1/auth";
+            const reqParam: RequestInit = {
+                body: Const.USER_LOGIN_DATA,
+                method: "POST"
+            };
+            // 評価条件の設定
+            const matcher = (result) => {
+                expect(result.body.success).toBeTruthy();
+                expect(result.data).toEqual(
+                    {
+                        apiUrl: "/api/",
+                        userData: {
+                            dept: "総務部",
+                            id: 1234,
+                            name: "安藤　レイコ",
+                            roll: "user",
+                        },
+                    },
+                );
+                // cookieからトークンを抽出して検証
+                let token = result.cookie.replace(
+                    "authorization=Bearer%20", "").trim();
+                token = token.replace("; Path=/", "").trim();
+                // トークンの検証
+                expect(JWTUtil.verifyToken(token)).toBeTruthy();
+            };
+            // HTTPリクエストとレスポンスの評価
+            TestUtility.request(url, reqParam)
+                .then(
+                    (result) => {
+                        matcher(result);
+                        cookie = result.cookie;
+                        done();
+                    })
+                .catch((e) => console.error(e.message));
+        });
+    });
+
+//    describe("管理者向け APIテスト", () => {
+//    });
+
+});

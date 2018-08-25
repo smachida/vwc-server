@@ -24,7 +24,7 @@ describe("Ping API テスト", () => {
            })
            .then((obj) => {
                expect(obj).toEqual(refObj);
-               done();
+	       //done();
            })
            .catch((e) => console.error(e.message));
    });
